@@ -1,5 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe Blimp, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  describe 'analyze' do
+    it 'creates a blimp' do
+      blimp = FactoryBot.create(:blimp)
+      expect(blimp.altitude).to be 1000
+    end
+  end
 end
