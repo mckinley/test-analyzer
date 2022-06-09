@@ -1,0 +1,2 @@
+class Blimp < ApplicationRecord
+end
