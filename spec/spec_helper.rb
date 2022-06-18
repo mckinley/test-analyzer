@@ -91,4 +91,76 @@ RSpec.configure do |config|
   # as the one that triggered the failure.
   Kernel.srand config.seed
 =end
+
+  module RSpec
+    module Core
+      class Example
+
+        def clear_exception
+          @exception = nil
+        end
+      end
+    end
+  end
+
+  def backup_create
+    class << FactoryBot
+      alias_method :original_create, :create
+    end
+  end
+
+  def reset_create
+    class << FactoryBot
+      alias_method :create, :original_create
+    end
+  end
+
+  def define_create_as_build_stubbed
+    def FactoryBot.create(*args)
+      FactoryBot.build_stubbed(*args)
+    end
+  end
+
+  def define_create_as_build
+    def FactoryBot.create(*args)
+      FactoryBot.build(*args)
+    end
+  end
+
+  def rewrite_example(example, strategy)
+    old_source = example.metadata[:block].source
+    new_source = old_source.gsub('FactoryBot.create', "FactoryBot.#{strategy.to_s}")
+
+    file = example.metadata[:file_path]
+    new_content = File.read(file).gsub(old_source, new_source)
+    File.open(file, 'w') { |f| f.puts new_content }
+  end
+
+  config.around(:each) do |example|
+    # ap example.metadata
+    # ap example.metadata[:block].source
+    # ap example.metadata[:file_path]
+    # ap example.exception
+
+    example.run
+
+    unless example.exception
+      backup_create
+      define_create_as_build_stubbed
+      example.run
+      if example.exception
+        RSpec.current_example.clear_exception
+        define_create_as_build
+        example.run
+        if example.exception
+          RSpec.current_example.clear_exception
+        else
+          rewrite_example(example, :build)
+        end
+      else
+        rewrite_example(example, :build_stubbed)
+      end
+      reset_create
+    end
+  end
 end

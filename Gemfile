@@ -46,8 +46,16 @@ group :development do
   # gem "spring"
 end
 
+# Additions
+
+group :test do
+  gem "test-prof", "~> 1.0"
+  gem 'ruby-prof', '>= 0.16.0', require: false
+end
+
 group :development, :test do
-  gem 'rspec-rails', '~> 6.0.0.rc1'
+  gem 'rspec-rails'
   gem 'factory_bot_rails'
+  gem 'awesome_print'
 end
 
