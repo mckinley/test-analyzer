@@ -3,6 +3,7 @@
 Clone the repo
 ```shell
 bundle install
+bundle exec rails db:setup
 bundle exec rspec
 git status
 ```
