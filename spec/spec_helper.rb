@@ -137,12 +137,25 @@ RSpec.configure do |config|
   end
 
   config.around(:each) do |example|
+    log = StringIO.new
+    ActiveRecord::Base.logger = Logger.new(log)
     # ap example.metadata
     # ap example.metadata[:block].source
     # ap example.metadata[:file_path]
     # ap example.exception
 
     example.run
+
+    log.rewind
+    query_strings = log.read
+
+    ap '-'
+    if query_strings.downcase.include? 'insert'
+      ap 'includes insert'
+      unless query_strings.downcase.include? 'select'
+        ap 'does not include select'
+      end
+    end
 
     unless example.exception
       backup_create
